@@ -62,6 +62,20 @@ var budgetController = (function () {
             return newItem;
         },
 
+        deleteItem: function(type, id) {
+            var ids, index;
+
+            ids = data.allItems[type].map((current) => {
+                return current.id;
+            });
+
+            index = ids.indexOf(id);
+
+            if(index !== -1) {
+                data.allItems[type].splice(index, 1);
+            }
+        },
+
         calculateBudget:  function() {
 
             // Calculate total income and expenses
@@ -110,6 +124,7 @@ var UIController = (function () {
         incomeLabel: '.budget__income--value',
         expensesLabel: '.budget__expenses--value',
         percentageLabel: '.budget__expenses--percentage',
+        container: '.container',
     };
 
     return {
@@ -128,7 +143,7 @@ var UIController = (function () {
             if (type === "inc") {
                 element = DOMstrings.incomeContainer;
                 html = `
-            <div class="item clearfix" id="income-${obj.id}">
+            <div class="item clearfix" id="inc-${obj.id}">
                 <div class="item__description">${obj.description}</div>
                 <div class="right clearfix">
                     <div class="item__value">${obj.value}</div>
@@ -141,7 +156,7 @@ var UIController = (function () {
             } else if (type === "exp") {
                 element = DOMstrings.expensesContainer;
                 html = `
-            <div class="item clearfix" id="expense-${obj.id}">
+            <div class="item clearfix" id="exp-${obj.id}">
                 <div class="item__description">${obj.description}</div>
                 <div class="right clearfix">
                     <div class="item__value">${obj.value}</div>
@@ -210,6 +225,8 @@ var controller = (function (budgCtrl, UICtrl) {
                 ctrlAddItem();
             }
         });
+
+        document.querySelector(DOM.container).addEventListener('click', ctrlDeleteItem);
     };
 
     var updateBudget = function() {
@@ -222,7 +239,6 @@ var controller = (function (budgCtrl, UICtrl) {
 
         // 6. Display the budget on the UI
         UICtrl.displayBudget(budget);
-        console.log(budget);
     }
     
     var ctrlAddItem = function () {
@@ -245,6 +261,26 @@ var controller = (function (budgCtrl, UICtrl) {
             updateBudget();
         }
     };
+
+    var ctrlDeleteItem = function(event) {
+        var itemID, splitID, type, ID;
+        
+        itemID = event.target.parentNode.parentNode.parentNode.parentNode.id;
+
+        if(itemID) {
+            // inc-1
+            splitID = itemID.split('-');
+            type = splitID[0];
+            ID = parseInt(splitID[1]);
+
+            // 1. Delete the item from the data structure
+            budgCtrl.deleteItem(type, ID);
+
+            // 2. Delete the item from the UI
+
+            // Update and show the new budget
+        }
+    }
 
     return {
         init: function () {
